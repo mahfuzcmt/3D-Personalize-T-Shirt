@@ -349,81 +349,25 @@ function changeTeamName(e){
 update_svg(e.target.id,e.target.value);
 }
 
-
-function copyStylesInline(destinationNode, sourceNode) {
-	var containerElements = ["svg","g"];
-	for (var cd = 0; cd < destinationNode.childNodes.length; cd++) {
-		try{
-			var child = destinationNode.childNodes[cd];
-			if (containerElements.indexOf(child.tagName) != -1) {
-				copyStylesInline(child, sourceNode.childNodes[cd]);
-				continue;
-			}
-			var style = sourceNode.childNodes[cd].currentStyle || window.getComputedStyle(sourceNode.childNodes[cd]);
-			if (style == "undefined" || style == null) continue;
-			for (var st = 0; st < style.length; st++){
-				child.style.setProperty(style[st], style.getPropertyValue(style[st]));
-			}
-		}catch (ex){}
-	}
-}
-
-function triggerDownload (imgURI, fileName) {
-	var evt = new MouseEvent("click", {
-		view: window,
-		bubbles: false,
-		cancelable: true
-	});
-	var a = document.createElement("a");
-	a.setAttribute("download", fileName);
-	a.setAttribute("href", imgURI);
-	a.setAttribute("target", '_blank');
-	a.dispatchEvent(evt);
-}
-
 function downloadSvg(fileName) {
-	var svg = document.getElementById("svgPathContainer").querySelector("svg");
-	var copy = svg.cloneNode(true);
-	copyStylesInline(copy, svg);
-	var canvas = document.createElement("canvas");
-	var bbox = svg.getBBox();
-	canvas.width = bbox.width;
-	canvas.height = bbox.height;
-	var ctx = canvas.getContext("2d");
-	ctx.clearRect(0, 0, bbox.width, bbox.height);
-	var data = (new XMLSerializer()).serializeToString(copy);
-	var DOMURL = window.URL || window.webkitURL || window;
-	var img = new Image();
-	var svgBlob = new Blob([data], {type: "image/svg+xml;charset=utf-8"});
-	var url = DOMURL.createObjectURL(svgBlob);
-	img.onload = function () {
-		ctx.drawImage(img, 0, 0);
-		DOMURL.revokeObjectURL(url);
-		if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob)
-		{
-			var blob = canvas.msToBlob();
-			navigator.msSaveOrOpenBlob(blob, fileName);
-		}
-		else {
-			var imgURI = canvas
-				.toDataURL("image/png")
-				.replace("image/png", "image/octet-stream");
-			triggerDownload(imgURI, fileName);
-		}
-		//document.removeChild(canvas);
-	};
-	img.src = url;
+	var svgData = $("svg")[0].outerHTML;
+	var svgBlob = new Blob([svgData], {type:"image/svg+xml;charset=utf-8"});
+	var svgUrl = URL.createObjectURL(svgBlob);
+	var downloadLink = document.createElement("a");
+	downloadLink.href = svgUrl;
+	downloadLink.download = "3d-custom-t-shirt-design.svg";
+	document.body.appendChild(downloadLink);
+	downloadLink.click();
+	document.body.removeChild(downloadLink);
 }
-
 
 function downloadImage(value){
-		console.info("Downloading....")
+	console.info("Downloading....")
 	var texts = $('#svgContainer text');
 	for(var i = 0;i < texts.length; i++){
 		var id = $(texts[i]).attr('id');
 		console.log("ID:" + id + ", Value:"+$(texts[i])[0].innerHTML);
 	}
-
 	var paths = $('#svgContainer path');
 	for(var i = 0;i < paths.length; i++){
 		var id = $(paths[i]).attr('id');
